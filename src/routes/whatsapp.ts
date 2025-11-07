@@ -8,6 +8,23 @@ import { baixarMidiaWhatsApp, transcreverAudio } from "../utils/whatsappMedia.js
 
 export const whatsappRouter = Router();
 
+
+// ✅ Adiciona suporte para GET direto em /whatsapp (usado pela Meta na verificação inicial)
+whatsappRouter.get("/", (req: Request, res: Response) => {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  if (mode === "subscribe" && token === process.env.WA_VERIFY_TOKEN) {
+    console.log("✅ Webhook do WhatsApp verificado com sucesso! (rota raiz)");
+    return res.status(200).send(challenge);
+  }
+
+  console.warn("⚠️ Tentativa de verificação inválida (rota raiz):", { mode, token });
+  return res.sendStatus(403);
+});
+
+
 /**
  * ✅ GET /whatsapp/webhook — verificação do Meta
  */
