@@ -12,6 +12,6 @@
     "noImplicitAny": false,    // 👈 evita erros chatos do finiaCore.ts
     "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
