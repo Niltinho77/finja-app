@@ -14,7 +14,10 @@ app.use("/api", indexRouter);
 app.use("/api/ia", iaRouter);
 app.use("/whatsapp", whatsappRouter);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ FinIA rodando em http://localhost:${PORT}`);
+const PORT = Number(process.env.PORT) || 8080;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ FinIA rodando em http://0.0.0.0:${PORT}`);
 });
+
+
