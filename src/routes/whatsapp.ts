@@ -1,10 +1,10 @@
 import express, { Router } from "express";
 import type { Request, Response } from "express";
-import prisma from "../db/client.ts";
-import { interpretarMensagem } from "../services/iaService.ts";
-import { processarComando } from "../services/finiaCore.ts";
-import { sendTextWithTemplateFallback } from "../services/whatsappService.ts";
-import { baixarMidiaWhatsApp, transcreverAudio } from "../utils/whatsappMedia.ts";
+import prisma from "../db/client";
+import { interpretarMensagem } from "../services/iaService";
+import { processarComando } from "../services/finiaCore";
+import { sendTextWithTemplateFallback } from "../services/whatsappService";
+import { baixarMidiaWhatsApp, transcreverAudio } from "../utils/whatsappMedia";
 
 export const whatsappRouter = Router();
 
