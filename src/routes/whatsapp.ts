@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import type { Request, Response } from "express";
-import prisma from "../db/client";
+import prisma from "../db/client.js";
 import { interpretarMensagem } from "../services/iaService.js";
 import { processarComando } from "../services/finiaCore.js";
 import { sendTextWithTemplateFallback } from "../services/whatsappService.js";
