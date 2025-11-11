@@ -300,6 +300,21 @@ export async function processarComando(comando: any, telefone: string) {
 
   const { usuario } = await validarPlano(telefone);
 
+  // 🔒 Limite global de mensagens para usuários TRIAL
+  if (usuario.plano === "TRIAL") {
+    const totalMensagens = await prisma.interacaoIA.count({
+      where: { usuarioId: usuario.id },
+    });
+
+    if (totalMensagens >= 10) {
+      return (
+        "🚫 Você atingiu o limite de *10 mensagens* do teste gratuito.\n\n" +
+        "💎 Ative o *Plano PREMIUM* e continue usando todos os recursos:\n" +
+        "👉 https://finia.app/assinar"
+      );
+    }
+  }
+
   // 🔒 Regras de limitação do plano TRIAL
 
 const textoFiltrado = textoBruto
@@ -411,44 +426,6 @@ if (usuario.plano === "TRIAL") {
       entradaTexto: { contains: "(audio" }, // identifica interações de voz
     },
   });
-
-  // 💸 1️⃣ Limite de lançamentos
-  if (tipo === "transacao" && acao === "inserir" && totalTransacoes >= 10) {
-    return (
-      "📈 Você atingiu o limite de *10 lançamentos* do teste gratuito.\n\n" +
-      "💎 *Ative o Plano PREMIUM* e continue registrando seus gastos:\n" +
-      "👉 https://finia.app/assinar"
-    );
-  }
-
-  // 📊 2️⃣ Limite de relatórios
-  if (tipo === "transacao" && acao === "consultar" && totalRelatorios >= 1) {
-    return (
-      "📊 Você já utilizou o seu *relatório gratuito* do teste.\n\n" +
-      "💎 Assine o *Plano PREMIUM* para relatórios ilimitados:\n" +
-      "👉 https://finia.app/assinar"
-    );
-  }
-
-  // 🎙️ 3️⃣ Limite de áudios
-  // (detecta que a mensagem veio de áudio pelo texto da transcrição ou interações anteriores)
-  if (comando.textoOriginal?.startsWith("(audio") && totalAudios >= 2) {
-    return (
-      "🎧 Você já usou seus *2 áudios gratuitos* do teste.\n\n" +
-      "💎 Ative o *Plano PREMIUM* para continuar usando comandos por voz:\n" +
-      "👉 https://finia.app/assinar"
-    );
-  }
-}
-
-
-  // 🔒 Bloqueios e limites do plano FREE
-  if (!planoAtivo) {
-    return (
-      "🚫 *Seu plano expirou!*\n\n" +
-      "💎 Ative o *Plano PREMIUM* para continuar usando o Finia sem limites:\n" +
-      "👉 https://finia.app/assinar"
-    );
   }
 
   if (isTrial) {
