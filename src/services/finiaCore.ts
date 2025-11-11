@@ -211,34 +211,46 @@ async function resumoTransacoes(
     periodo.fim
   ).format("DD/MM")}`;
 
-  // 🔹 Gera gráfico apenas das SAÍDAS (gastos)
-  try {
-    const gastos = transacoes.filter((t) => t.tipo === "SAIDA");
+  // 🔹 Gera gráfico de gastos reais (SAÍDAS) no período selecionado
+try {
+  const gastos = transacoes.filter(
+    (t) => t.tipo?.toUpperCase?.() === "SAIDA" || t.tipo?.toLowerCase?.() === "saida"
+  );
+
+  if (gastos.length === 0) {
+    console.log("⚠️ Nenhum gasto detectado para o gráfico no período:", periodo.label);
+  } else {
     const porCategoria = new Map<string, number>();
 
     for (const t of gastos) {
-      const nome = t.categoria?.nome || "Outros";
-      porCategoria.set(nome, (porCategoria.get(nome) || 0) + t.valor);
+      const nomeCategoria = t.categoria?.nome?.trim() || "Outros";
+      porCategoria.set(nomeCategoria, (porCategoria.get(nomeCategoria) || 0) + t.valor);
     }
 
     const topCategorias = [...porCategoria.entries()]
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
+      .slice(0, 8); // mostra até 8 categorias
 
     const categorias = topCategorias.map(([nome]) => nome);
     const valores = topCategorias.map(([, v]) => v);
 
-    if (categorias.length > 1) {
+    // sempre gera, mesmo com uma categoria
+    if (categorias.length > 0) {
       const chartPath = await gerarGraficoPizza(categorias, valores);
       await sendImageFile(
         usuarioTelefone,
         chartPath,
-        "📊 Distribuição de gastos por categoria"
+        `📊 Seus gastos ${periodo.label} por categoria`
       );
+      console.log("✅ Gráfico de gastos enviado com sucesso!");
+    } else {
+      console.log("⚠️ Nenhuma categoria de gasto para plotar.");
     }
-  } catch (err: any) {
-    console.error("⚠️ Falha ao gerar/enviar gráfico:", err?.message || err);
   }
+} catch (err: any) {
+  console.error("⚠️ Falha ao gerar/enviar gráfico:", err?.message || err);
+}
+
 
   // 🧾 Mensagem final simplificada
   return `📊 *Resumo financeiro ${periodo.label}*
