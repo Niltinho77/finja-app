@@ -7,78 +7,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Usuario {
-  id             String          @id @default(cuid())
-  nome           String?
-  telefone       String          @unique
-  idioma         String?         @default("pt-BR")
-  ativo          Boolean         @default(true)
-  criadoEm       DateTime        @default(now())
-  atualizadoEm   DateTime        @updatedAt
-
-  transacoes     Transacao[]
-  tarefas        Tarefa[]
-  interacoesIA   InteracaoIA[]
-  
-  plano          String?         @default("free")  // free | trial | premium | tester | blocked
-  trialExpiraEm  DateTime?
+  id              String        @id @default(cuid())
+  nome            String?
+  telefone        String        @unique
+  idioma          String?       @default("pt-BR")
+  ativo           Boolean       @default(true)
+  criadoEm        DateTime      @default(now())
+  atualizadoEm    DateTime      @updatedAt
+  plano           String?       @default("free")
+  trialExpiraEm   DateTime?
   premiumExpiraEm DateTime?
-  tester         Boolean         @default(false)   // true = acesso liberado independente de plano
+  tester          Boolean       @default(false)
+  interacoesIA    InteracaoIA[]
+  tarefas         Tarefa[]
+  transacoes      Transacao[]
 }
 
 model Categoria {
-  id            String         @id @default(cuid())
-  nome          String         @unique
-  tipo          TipoTransacao  // ENTRADA ou SAIDA
-  icone         String?        // ex: "💳" ou "🛒"
-  cor           String?        // ex: "#FF9800"
-  descricao     String?
-  transacoes    Transacao[]
-  criadoEm      DateTime       @default(now())
+  id         String        @id @default(cuid())
+  nome       String        @unique
+  tipo       TipoTransacao
+  icone      String?
+  cor        String?
+  descricao  String?
+  criadoEm   DateTime      @default(now())
+  transacoes Transacao[]
 }
 
 model Transacao {
-  id             String          @id @default(cuid())
-  usuario        Usuario         @relation(fields: [usuarioId], references: [id])
-  usuarioId      String
-
-  descricao      String
-  valor          Float
-  tipo           TipoTransacao
-  data           DateTime        @default(now())
-
-  categoriaId    String?
-  categoria      Categoria?      @relation(fields: [categoriaId], references: [id])
-
-  origemTexto    String?
-  confirmado     Boolean         @default(false)
-
-  criadoEm       DateTime        @default(now())
-  atualizadoEm   DateTime        @updatedAt
+  id           String        @id @default(cuid())
+  usuarioId    String
+  descricao    String
+  valor        Float
+  tipo         TipoTransacao
+  data         DateTime      @default(now())
+  categoriaId  String?
+  origemTexto  String?
+  confirmado   Boolean       @default(false)
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+  categoria    Categoria?    @relation(fields: [categoriaId], references: [id])
+  usuario      Usuario       @relation(fields: [usuarioId], references: [id])
 }
 
+model Tarefa {
+  id              String       @id @default(cuid())
+  usuarioId       String
+  descricao       String
+  data            DateTime?
+  hora            String?
+  status          StatusTarefa @default(PENDENTE)
+  origemTexto     String?
+  lembrarEm       DateTime?
+  lembreteEnviado Boolean      @default(false)
+  criadoEm        DateTime     @default(now())
+  atualizadoEm    DateTime     @updatedAt
+  usuario         Usuario      @relation(fields: [usuarioId], references: [id])
+}
+
+model InteracaoIA {
+  id           String          @id @default(cuid())
+  usuarioId    String
+  entradaTexto String
+  respostaIA   String?
+  tipo         TipoInteracaoIA
+  sucesso      Boolean         @default(true)
+  messageId    String?         @unique
+  criadoEm     DateTime        @default(now())
+  usuario      Usuario         @relation(fields: [usuarioId], references: [id])
+}
 
 enum TipoTransacao {
   ENTRADA
   SAIDA
-}
-
-model Tarefa {
-  id               String          @id @default(cuid())
-  usuario          Usuario         @relation(fields: [usuarioId], references: [id])
-  usuarioId        String
-
-  descricao        String
-  data             DateTime?
-  hora             String?
-  status           StatusTarefa    @default(PENDENTE)
-  origemTexto      String?
-  lembrarEm        DateTime?       // data/hora para disparar lembrete
-  lembreteEnviado  Boolean         @default(false)
-
-  criadoEm         DateTime        @default(now())
-  atualizadoEm     DateTime        @updatedAt
 }
 
 enum StatusTarefa {
@@ -87,23 +89,11 @@ enum StatusTarefa {
   CANCELADA
 }
 
-model InteracaoIA {
-  id             String      @id @default(cuid())
-  usuario        Usuario     @relation(fields: [usuarioId], references: [id])
-  usuarioId      String
-
-  entradaTexto   String
-  respostaIA     String?
-  tipo           TipoInteracaoIA
-  sucesso        Boolean     @default(true)
-  messageId      String?     @unique
-  criadoEm       DateTime    @default(now())
-}
-
 enum TipoInteracaoIA {
   TRANSACAO
   TAREFA
   CONSULTA
   EDICAO
   REMOCAO
+  OUTRO
 }

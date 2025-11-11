@@ -323,7 +323,6 @@ export async function processarComando(comando: any, telefone: string) {
   }
 
 
-
   // garante usuário
   let usuario = await prisma.usuario.findUnique({ where: { telefone } });
   if (!usuario) {
