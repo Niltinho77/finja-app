@@ -48,7 +48,7 @@ model Transacao {
   criadoEm     DateTime      @default(now())
   atualizadoEm DateTime      @updatedAt
   categoria    Categoria?    @relation(fields: [categoriaId], references: [id])
-  usuario      Usuario       @relation(fields: [usuarioId], references: [id])
+  usuario      Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model Tarefa {
@@ -63,7 +63,7 @@ model Tarefa {
   lembreteEnviado Boolean      @default(false)
   criadoEm        DateTime     @default(now())
   atualizadoEm    DateTime     @updatedAt
-  usuario         Usuario      @relation(fields: [usuarioId], references: [id])
+  usuario         Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model InteracaoIA {
@@ -75,7 +75,7 @@ model InteracaoIA {
   sucesso      Boolean         @default(true)
   messageId    String?         @unique
   criadoEm     DateTime        @default(now())
-  usuario      Usuario         @relation(fields: [usuarioId], references: [id])
+  usuario      Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 enum TipoTransacao {
