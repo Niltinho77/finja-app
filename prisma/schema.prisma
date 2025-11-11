@@ -109,4 +109,5 @@ enum TipoInteracaoIA {
   EDICAO
   REMOCAO
   OUTRO
+  ERRO
 }

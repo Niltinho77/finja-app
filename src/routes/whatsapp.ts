@@ -114,32 +114,54 @@ whatsappRouter.post("/webhook", async (req: Request, res: Response) => {
           const comando = await interpretarMensagem(texto);
 
           // ⚙️ Processa comando no núcleo FinIA
-          const resposta = await processarComando(
-            { ...comando, textoOriginal: texto },
-            numero
-          );
-
-          // 💾 Registra interação
-          await prisma.interacaoIA.create({
-            data: {
-              usuarioId: usuario.id,
-              entradaTexto: texto,
-              respostaIA: JSON.stringify(comando),
-              tipo: comando?.tipo?.toUpperCase?.() || "DESCONHECIDO",
-              messageId,
-            },
-          });
-
-          // 💬 Envia resposta
           try {
-            await sendTextWithTemplateFallback(numero, resposta);
-            console.log("📤 Resposta enviada com sucesso!");
-          } catch (sendErr: any) {
-            console.error(
-              "❌ Erro ao enviar resposta:",
-              sendErr?.response?.data || sendErr
-            );
-          }
+  // ⚙️ Processa comando no núcleo FinIA
+  const resposta = await processarComando(
+    { ...comando, textoOriginal: texto },
+    numero
+  );
+
+  // 💾 Registra interação normal (se não deu erro)
+  await prisma.interacaoIA.create({
+    data: {
+      usuarioId: usuario.id,
+      entradaTexto: texto,
+      respostaIA: JSON.stringify(comando),
+      tipo: comando?.tipo?.toUpperCase?.() || "DESCONHECIDO",
+      messageId,
+    },
+  });
+
+  // 💬 Envia resposta
+  if (resposta) {
+    await sendTextWithTemplateFallback(numero, resposta);
+    console.log("📤 Resposta enviada com sucesso!");
+  }
+
+} catch (err: any) {
+  // 🚨 Captura erros de limite e envia mensagem ao usuário
+  const mensagemErro =
+    typeof err.message === "string"
+      ? err.message
+      : "⚠️ Ocorreu um erro inesperado. Tente novamente.";
+
+  console.warn("🚫 Interação bloqueada ou erro FinIA:", mensagemErro);
+
+  await sendTextWithTemplateFallback(numero, mensagemErro);
+
+  // 💾 Loga a interação com status de erro, se quiser auditar
+  await prisma.interacaoIA.create({
+    data: {
+      usuarioId: usuario.id,
+      entradaTexto: texto,
+      respostaIA: mensagemErro,
+      tipo: "ERRO",
+      messageId,
+      sucesso: false,
+    },
+  });
+}
+
         }
       }
     }
