@@ -24,28 +24,32 @@ const prisma = new PrismaClient();
 export async function validarPlano(telefone: string) {
   let usuario = await prisma.usuario.findUnique({ where: { telefone } });
 
-  // 🆕 Se não existir, cria TRIAL de 3 dias automaticamente
   if (!usuario) {
     const agora = dayjs();
-    usuario = await prisma.usuario.create({
-    data: {
-      telefone,
-      nome: `Usuário ${telefone}`,
-      plano: "TRIAL",
-      trialExpiraEm: agora.add(3, "day").toDate(),
-    },
-  });
+    await prisma.usuario.create({
+      data: {
+        telefone,
+        nome: `Usuário ${telefone}`,
+        plano: "TRIAL",
+        trialAtivadoEm: agora.toDate(),
+        trialExpiraEm: agora.add(3, "day").toDate(),
+      },
+    });
 
+    // 🔄 Recarrega o usuário atualizado do banco
+    usuario = await prisma.usuario.findUnique({ where: { telefone } });
   }
 
+  // ✅ Garante ao TypeScript que o usuário agora existe
+  if (!usuario) {
+    throw new Error("Falha ao criar ou encontrar usuário.");
+  }
+
+  // 🔒 Agora o TS sabe que usuario não é null
   const agora = dayjs();
-
   const isTester = usuario.tester === true;
-  const isTrial = usuario.trialExpiraEm && agora.isBefore(usuario.trialExpiraEm);
-  const isPremium = usuario.premiumExpiraEm && agora.isBefore(usuario.premiumExpiraEm);
-
-  // 🔒 Determina se o usuário ainda tem acesso ativo
-  const autorizado = isTester || isTrial || isPremium;
+  const isTrial = !!usuario.trialExpiraEm && agora.isBefore(usuario.trialExpiraEm);
+  const isPremium = !!usuario.premiumExpiraEm && agora.isBefore(usuario.premiumExpiraEm);
 
   // 🔄 Atualiza planos expirados automaticamente
   if (usuario.plano === "PREMIUM" && !isPremium) {
@@ -62,8 +66,9 @@ export async function validarPlano(telefone: string) {
     });
   }
 
-  return { autorizado, usuario };
+  return { autorizado: isTester || isTrial || isPremium, usuario };
 }
+
 
 
 /** Utils */
