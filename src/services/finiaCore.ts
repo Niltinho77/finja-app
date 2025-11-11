@@ -279,14 +279,39 @@ export async function processarComando(comando: any, telefone: string) {
   const textoBruto = comando.textoOriginal || comando.descricao || "";
   console.log("🧩 processando comando:", comando);
 
-  // ✅ Garante que o plano/trial esteja configurado antes de continuar
-  await validarPlano(telefone);
+  const { usuario } = await validarPlano(telefone);
 
-// 🚧 Filtra mensagens que não têm relação com o app (financeiro OU tarefas)
-  const textoFiltrado = textoBruto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+const textoFiltrado = textoBruto
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase();
+
+// 👋 Palavras de saudação simples
+const saudacoes = ["oi", "ola", "olá", "bom dia", "boa tarde", "boa noite", "e ai", "tudo bem", "blz", "beleza"];
+
+const ehSaudacaoSimples = saudacoes.some(p => textoFiltrado === p || textoFiltrado.includes(p));
+
+// ✨ Se for saudação → envia mensagem de boas-vindas
+if (ehSaudacaoSimples) {
+  const trialFim = usuario.trialExpiraEm
+    ? dayjs(usuario.trialExpiraEm).format("DD/MM")
+    : dayjs().add(3, "day").format("DD/MM");
+
+  return (
+    "👋 Olá! Eu sou a *Lume*, sua assistente financeira. 😊\n\n" +
+    "Você está no seu período de *teste gratuito*!\n" +
+    `🗓️ Ele expira em *${trialFim}*.\n\n` +
+    "Posso te ajudar com:\n" +
+    "• 💸 Registrar um gasto ou ganho\n" +
+    "• 📊 Ver seu resumo financeiro\n" +
+    "• 📝 Criar uma tarefa com horário\n\n" +
+    "Tente enviar algo como:\n" +
+    "• 'Gastei 50 com gasolina'\n" +
+    "• 'Quanto gastei este mês?'\n" +
+    "• 'Lavar o carro amanhã às 13h'\n\n" +
+    "👉 Quando quiser liberar tudo, ative o plano PREMIUM em https://finia.app/assinar"
+  );
+}
 
   // 💰 Palavras relacionadas a finanças
   const palavrasFinanceiras = [
@@ -333,29 +358,6 @@ export async function processarComando(comando: any, telefone: string) {
       "Tente mandar algo nesse formato que eu entendo rapidinho!"
     );
   }
-
-
-  // garante usuário
-  let usuario = await prisma.usuario.findUnique({ where: { telefone } });
-  if (!usuario) {
-    usuario = await prisma.usuario.create({
-      data: { telefone, nome: `Usuário ${telefone}` },
-    });
-  }
-
-  if (!usuario.trialExpiraEm) {
-  const trialFim = dayjs().add(3, "day").format("DD/MM");
-  return (
-    "👋 Olá! Eu sou a *Lume*, sua assistente financeira. 😊\n\n" +
-    "Você acaba de iniciar seu período de *teste gratuito de 3 dias*!\n" +
-    `🗓️ O teste expira em *${trialFim}*.\n\n` +
-    "Durante o teste, você pode:\n" +
-    "• 💸 Registrar até 10 transações\n" +
-    "• 📝 Criar até 10 tarefas\n" +
-    "• 📊 Gerar 1 relatório semanal\n\n" +
-    "👉 Quando quiser liberar tudo, ative o plano PREMIUM em https://finia.app/assinar"
-  );
-}
 
 
   // 🧾 Verifica plano e aplica limites do plano FREE
