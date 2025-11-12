@@ -307,11 +307,14 @@ export async function processarComando(comando: any, telefone: string) {
     });
 
     if (totalMensagens >= 10) {
-      return (
-        "🚫 Você atingiu o limite de *10 mensagens* do teste gratuito.\n\n" +
-        "💎 Ative o *Plano PREMIUM* e continue usando todos os recursos:\n" +
-        "👉 https://finia.app/assinar"
-      );
+      const checkoutUrl = `${process.env.API_URL}/api/stripe/checkout?userId=${usuario.id}`;
+
+        return (
+          "🚫 Você atingiu o limite do teste gratuito.\n\n" +
+          "💎 Assine o *FinIA Premium* e continue sem restrições:\n" +
+          `👉 ${checkoutUrl}`
+        );
+
     }
   }
 

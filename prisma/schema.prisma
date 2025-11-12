@@ -31,6 +31,8 @@ model Usuario {
   // 🔹 Gerenciamento de plano
   plano           PlanoUsuario?   @default(TRIAL)
   trialAtivadoEm  DateTime?       @default(now())
+  stripeCustomerId       String?          
+  stripeSubscriptionId   String?
   trialExpiraEm   DateTime?
   premiumExpiraEm DateTime?
   tester          Boolean         @default(false)
