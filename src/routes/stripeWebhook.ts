@@ -50,6 +50,19 @@ export async function stripeWebhookHandler(req: Request, res: Response) {
           },
         });
 
+        // Após atualizar o usuário para PREMIUM
+        if (subscriptionId && userId) {
+        try {
+            await stripe.subscriptions.update(subscriptionId, {
+            metadata: { userId },
+            });
+            console.log(`🔁 Metadata adicionada à assinatura ${subscriptionId}`);
+        } catch (err) {
+            console.warn("⚠️ Falha ao salvar metadata na assinatura:", err);
+        }
+        }
+
+
         console.log(`✅ Usuário ${userId} atualizado para PREMIUM`);
         break;
       }
