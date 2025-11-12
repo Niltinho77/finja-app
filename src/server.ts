@@ -12,12 +12,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ CORS
+// ✅ CORS global
 app.use(cors());
 
-// ✅ Webhook Stripe vem ANTES do express.json()
-app.post(
-  "/api/stripe/webhook",
+// ✅ 🧩 Rota isolada de webhook (NENHUM outro middleware toca nela)
+const webhookApp = express.Router();
+webhookApp.post(
+  "/",
   bodyParser.raw({ type: "application/json" }),
   (req: any, _res, next) => {
     req.rawBody = req.body;
@@ -25,11 +26,13 @@ app.post(
   },
   stripeWebhookHandler
 );
+app.use("/api/stripe/webhook", webhookApp); // <— isolado de tudo
 
-// ✅ Depois disso vem o resto
+// ✅ Parsers normais só agora
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// ✅ Suas demais rotas
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
 app.use("/api/ia", iaRoutes);
