@@ -6,6 +6,9 @@ import stripeRoutes from "./routes/stripe.js";
 import stripeSessionRoutes from "./routes/stripeSession.js";
 import whatsappRoutes from "./routes/whatsapp.js";
 import iaRoutes from "./routes/ia.js";
+import authRouter from "./routes/auth";
+import transactionsRouter from "./routes/transacoes";
+import tasksRouter from "./routes/tarefas";
 
 dotenv.config();
 
@@ -32,8 +35,14 @@ app.post(
 );
 
 // ✅ 3. As demais rotas usam JSON normalmente
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// monta as novas rotas
+app.use("/api/auth", authRouter);
+app.use("/api/transactions", transactionsRouter);
+app.use("/api/tasks", tasksRouter);
 
 // ✅ 4. Suas rotas normais
 app.use("/api/stripe", stripeSessionRoutes);
@@ -46,3 +55,5 @@ app.get("/", (_req, res) => res.send("FinIA backend rodando 🚀"));
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ FinIA rodando em http://0.0.0.0:${PORT}`);
 });
+
+export default app;
