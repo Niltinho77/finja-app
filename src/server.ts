@@ -36,8 +36,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ✅ 4. Suas rotas normais
-app.use("/stripe", stripeSessionRoutes);
-app.use("/stripe", stripeRoutes);
+app.use("api/stripe", stripeSessionRoutes);
+app.use("api/stripe", stripeRoutes);
 app.use("/whatsapp", whatsappRoutes);
 app.use("/ia", iaRoutes);
 
