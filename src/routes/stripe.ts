@@ -31,13 +31,15 @@ router.get("/checkout", async (req, res) => {
     }
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer,
-      line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: { userId },
-    });
+        mode: "subscription",
+        line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+        success_url: `${process.env.FRONTEND_URL}/success`,
+        cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+        metadata: {
+            userId: usuario.id.toString(), // <- guarda o ID do usuário no Stripe
+        },
+        });
+
 
     return res.redirect(303, session.url!);
   } catch (e: any) {
