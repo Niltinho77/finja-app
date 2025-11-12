@@ -6,6 +6,8 @@ import { stripeWebhookHandler } from "./routes/stripeWebhook.js";
 import stripeRoutes from "./routes/stripe.js";
 import whatsappRoutes from "./routes/whatsapp.js";
 import iaRoutes from "./routes/ia.js";
+import stripeSessionRoutes from "./routes/stripeSession.js";
+
 
 dotenv.config();
 
@@ -26,11 +28,14 @@ webhookApp.post(
   },
   stripeWebhookHandler
 );
+app.use("/api/stripe", stripeSessionRoutes);
+
 app.use("/api/stripe/webhook", webhookApp); // <— isolado de tudo
 
 // ✅ Parsers normais só agora
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // ✅ Suas demais rotas
 app.use("/api/stripe", stripeRoutes);
