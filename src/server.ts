@@ -15,7 +15,6 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(cors());
 
 // ✅ 1. Middleware de log pra debug temporário
 app.use((req, _res, next) => {
