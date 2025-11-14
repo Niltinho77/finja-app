@@ -67,40 +67,52 @@ router.post("/login", async (req, res) => {
  * - Marca como usado
  * - Gera JWT normal e devolve user + token
  */
+
 router.post("/magic-login", async (req, res) => {
   const { token } = req.body as { token?: string };
 
   if (!token) {
-    return res.status(400).json({ message: "Token do link mágico é obrigatório." });
+    return res
+      .status(400)
+      .json({ message: "Token do link mágico é obrigatório." });
   }
 
   try {
-    // procura o link mágico pelo token
     const link = await prisma.dashboardMagicLink.findUnique({
       where: { token },
     });
 
     if (!link) {
-      return res.status(400).json({ message: "Link mágico inválido ou já utilizado." });
+      return res
+        .status(400)
+        .json({ message: "Link mágico inválido ou já utilizado." });
     }
 
     const agora = new Date();
 
     if (link.usado) {
-      return res.status(400).json({ message: "Este link mágico já foi utilizado." });
+      return res
+        .status(400)
+        .json({ message: "Este link mágico já foi utilizado." });
     }
 
     if (link.expiraEm <= agora) {
-      return res.status(400).json({ message: "Este link mágico expirou. Peça um novo resumo pelo FinIA." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Este link mágico expirou. Peça um novo resumo pelo FinIA.",
+        });
     }
 
-    // carrega usuário
     const usuario = await prisma.usuario.findUnique({
       where: { id: link.usuarioId },
     });
 
     if (!usuario) {
-      return res.status(404).json({ message: "Usuário associado ao link não foi encontrado." });
+      return res
+        .status(404)
+        .json({ message: "Usuário associado ao link não foi encontrado." });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -110,13 +122,11 @@ router.post("/magic-login", async (req, res) => {
         .json({ message: "Configuração interna ausente (JWT_SECRET)." });
     }
 
-    // marca o link como usado, para não permitir reuso
     await prisma.dashboardMagicLink.update({
       where: { id: link.id },
       data: { usado: true },
     });
 
-    // gera JWT normal de 7 dias
     const jwtToken = jwt.sign(
       { userId: usuario.id },
       process.env.JWT_SECRET,
@@ -138,7 +148,9 @@ router.post("/magic-login", async (req, res) => {
     });
   } catch (err) {
     console.error("Erro em /auth/magic-login:", err);
-    return res.status(500).json({ message: "Erro interno ao validar o link mágico." });
+    return res
+      .status(500)
+      .json({ message: "Erro interno ao validar o link mágico." });
   }
 });
 
