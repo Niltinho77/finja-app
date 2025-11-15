@@ -451,7 +451,7 @@ if (ehSaudacaoSimples) {
 
   // 📅 Palavras relacionadas a tarefas / rotina / agendamento
   const palavrasTarefas = [
-    "tarefa", "tarefas", "lembrete", "anotacao", "agenda", "reuniao", "compromisso",
+    "tarefa", "tarefas", "lembrete", "anotacao", "agenda", "agende", "agendar", "adicionar", "adicione", "reuniao", "compromisso",
     "evento", "planejar", "planejamento", "meta", "objetivo", "fazer", "lavar", "estudar",
     "ir", "buscar", "ligar", "enviar", "organizar", "preparar", "visitar", "lembrar",
     "amanha", "hoje", "ontem", "semana", "mes", "horario", "hora", "data"
